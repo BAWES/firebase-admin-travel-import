@@ -19,9 +19,6 @@ countries.forEach((country) => {
   // Place into region
   placeCountryIntoRegion(countryKey, country);
 
-  // Place into countries
-  placeCountryIntoCountries(countryKey, country);
-
   // Append to number of countries around world
   incrementRegionCounter("World");
 });
@@ -40,14 +37,8 @@ function placeCountryIntoRegion(countryKey, country){
   regionRef.child(`countries/${countryKey}`).set(country);
 }
 
-
-function placeCountryIntoCountries(countryKey, country){
-  var allCountriesRef = db.ref(`countries/${countryKey}`);
-  allCountriesRef.set(country);
-}
-
 function incrementRegionCounter(regionName){
-  var statsRef = db.ref(`totalCountries/${regionName}`);
+  var statsRef = db.ref(`regions/${regionName}/totalCountries`);
 
   statsRef.transaction(currentCount => {
     if(!currentCount) currentCount = 0;
