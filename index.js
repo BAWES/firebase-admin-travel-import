@@ -10,47 +10,47 @@ admin.initializeApp({
 var db = admin.database();
 
 
-var statsRef = db.ref("totalCountries");
-statsRef.set({
-  "world": 0,
-  "europe": 0,
-  "asia": 0,
-  "northamerica": 0,
-  "southamerica": 0,
-  "etc": 0,
-});
-
-
-
 // Read country json list for import
 var countries = require("./countries.json");
 countries.forEach((country) => {
+  // Create unique country key before placing duplicates
+  let countryKey = db.ref("/").push(undefined).key;
+
   // Place into region
-  placeCountryIntoRegion(country);
+  placeCountryIntoRegion(countryKey, country);
 
   // Place into countries
-  placeCountryIntoCountries(country);
+  placeCountryIntoCountries(countryKey, country);
 
   // Append to number of countries around world
-  statsRef.child("world").transaction(currentCount => {
-    return currentCount + 1;
-  });
+  incrementRegionCounter("World");
 });
 
 
-function placeCountryIntoRegion(country){
+function placeCountryIntoRegion(countryKey, country){
   var allRegionsRef = db.ref("regions");
 
   let regionName = !country.region? "Antartica" : country.region
   let regionRef = allRegionsRef.child(regionName);
   // Set Region Name within Region Record
   regionRef.update({name: regionName});
+  // Increment country count for that region
+  incrementRegionCounter(regionName);
   // Push country under that region
-  regionRef.child("countries").push(country);
+  regionRef.child(`countries/${countryKey}`).set(country);
 }
 
 
-function placeCountryIntoCountries(country){
-  var allCountriesRef = db.ref("countries");
-  allCountriesRef.push(country);
+function placeCountryIntoCountries(countryKey, country){
+  var allCountriesRef = db.ref(`countries/${countryKey}`);
+  allCountriesRef.set(country);
+}
+
+function incrementRegionCounter(regionName){
+  var statsRef = db.ref(`totalCountries/${regionName}`);
+
+  statsRef.transaction(currentCount => {
+    if(!currentCount) currentCount = 0;
+    return currentCount + 1;
+  });
 }
