@@ -20,15 +20,37 @@ statsRef.set({
   "etc": 0,
 });
 
-var countriesRef = db.ref("countries");
 
-// Read country json list and import each country
+
+// Read country json list for import
 var countries = require("./countries.json");
 countries.forEach((country) => {
-  countriesRef.push(country);
+  // Place into region
+  placeCountryIntoRegion(country);
+
+  // Place into countries
+  placeCountryIntoCountries(country);
 
   // Append to number of countries around world
   statsRef.child("world").transaction(currentCount => {
     return currentCount + 1;
   });
 });
+
+
+function placeCountryIntoRegion(country){
+  var allRegionsRef = db.ref("regions");
+
+  let regionName = !country.region? "Antartica" : country.region
+  let regionRef = allRegionsRef.child(regionName);
+  // Set Region Name within Region Record
+  regionRef.update({name: regionName});
+  // Push country under that region
+  regionRef.child("countries").push(country);
+}
+
+
+function placeCountryIntoCountries(country){
+  var allCountriesRef = db.ref("countries");
+  allCountriesRef.push(country);
+}
