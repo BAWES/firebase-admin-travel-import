@@ -19,8 +19,8 @@ countries.forEach((country) => {
   // Place into region
   placeCountryIntoRegion(countryKey, country);
 
-  // Append to number of countries around world
-  incrementRegionCounter("World");
+  // // Append to number of countries around world
+  // incrementRegionCounter("World");
 });
 
 
